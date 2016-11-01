@@ -1,0 +1,31 @@
+.t3 {
+	border: 1px solid $square-color;
+}
+
+.t3__square {
+	width:100px;
+	height:100px;
+	background: $square-color;
+    font-size: 80px;
+    text-align: center;
+}
+
+.t3__square--x {
+	background: $x-square-color;
+}
+
+.t3__square--o {
+	background: $o-square-color;
+}
+
+.clickable {
+	cursor: pointer;
+}
+
+.t3__square.computer {
+	color: blue;
+}
+
+.t3__square.player {
+	color:#ff7d93;
+}
