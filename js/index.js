@@ -26,7 +26,9 @@ GameBoard = {
 		playAgain: '#play-again',
 		youWin: '#you-win',
 		youLose: '#you-lose',
-		youTie: '#you-tie'
+		youTie: '#you-tie',
+		playAsO: '#playAsO',
+		tokenSwitch: '#label-switch'
 	},
 
 	init: function() {
@@ -38,13 +40,19 @@ GameBoard = {
 		$(gb.playAgain).click(function() {
 			GameBoard.restart();
 		});
+
+		$(gb.playAsO).change(function() {
+			GameBoard.switchTokens();
+		});
+
+
 	},
 
 	restart: function() {
 		gb.gameboard = ['E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E'];
 		Animation.gameOver();
 		GameBoard.render(gb.gameboard);
-		GameActions.playerPlays(gb.gameboard);
+		GameActions.chooseFirstPlayer();
 		$(gb.youWin).addClass('hidden');
 		$(gb.youLose).addClass('hidden');
 		$(gb.youTie).addClass('hidden');
@@ -52,24 +60,33 @@ GameBoard = {
 
 	},
 
+	switchTokens: function() {
+
+		if ($(gb.playAsO).prop("checked")) {
+			gb.player = "O";
+			gb.computer = "X";
+		} else {
+			gb.player = "X";
+			gb.computer = "O";
+		}
+		GameBoard.restart();
+	},
+
 	render: function() {
 		for(var i = 0; i < gb.gameboard.length; i++) {
 			if (gb.gameboard[i] !== "E") {
-				$(gb.place[i]).removeClass('clickable player computer');
+				$(gb.place[i]).removeClass('clickable piece-X piece-O');
 
 				if (gb.gameboard[i] === gb.computer) {
-					$(gb.place[i]).addClass('computer');
-					console.log(gb.place[i] + "> ." + gb.computer);
+					$(gb.place[i]).addClass('piece-' + gb.computer);
 					$(gb.place[i] + "> ." + gb.computer).removeClass('hidden');
 				} else if (gb.gameboard[i] === gb.player) {
-
-					console.log(gb.place[i] + "> ." + gb.player);
-					$(gb.place[i]).addClass('player');
+					$(gb.place[i]).addClass('piece-' + gb.player);
 					$(gb.place[i] + "> ." + gb.player).removeClass('hidden');
 				}
 
 			} else {
-				$(gb.place[i]).addClass('clickable').removeClass('player computer');
+				$(gb.place[i]).addClass('clickable').removeClass('piece-X piece-O');
 				$(gb.place[i] + "> .O").addClass('hidden');
 				$(gb.place[i] + "> .opener").addClass('hidden');
 				$(gb.place[i] + "> .X").addClass('hidden');
@@ -87,7 +104,7 @@ GameActions = {
 	init: function() {
 		ga = this.settings;
 		this.bindUIActions();
-		GameActions.playerPlays(gb.gameboard);
+		GameActions.chooseFirstPlayer();
 
 	},
 
@@ -95,7 +112,17 @@ GameActions = {
 
 	},
 
+	chooseFirstPlayer: function() {
+		console.log($(gb.playAsO).prop("checked"));
+		if ($(gb.playAsO).prop("checked")) {
+			GameActions.computerPlays(gb.gameboard);
+		} else {
+			GameActions.playerPlays(gb.gameboard);
+		}
+	},
+
 	computerPlays: function() {
+		console.log("playing");
 		var spaces = GameActions.findAvailableSpace(gb.gameboard);
 		if(spaces.length > 0) {
 			var chosenSpace = Math.floor(Math.random() * spaces.length);
@@ -129,9 +156,9 @@ GameActions = {
 			if ((gb.gameboard[c[0]] !== 'E') && (gb.gameboard[c[0]] === gb.gameboard[c[1]]) && (gb.gameboard[c[0]] === gb.gameboard[c[2]])) {
 				$(gb.playAgain).removeClass('hide');
 				if (gb.player === gb.gameboard[c[0]]) {
-					$(gb.youWin).removeClass('hidden');
+					$(gb.youWin).removeClass('hidden X-wins O-wins').addClass(gb.player + '-wins');
 				} else {
-					$(gb.youLose).removeClass('hidden');
+					$(gb.youLose).removeClass('hidden X-wins O-wins').addClass(gb.computer + '-wins');
 				}
 				Animation.win(c[0], c[2], gb.gameboard[c[0]]);
 				return gb.gameboard[c[0]];
@@ -140,6 +167,7 @@ GameActions = {
 
 		if (GameActions.findAvailableSpace(gb.gameboard).length === 0) {
 			$(gb.youTie).removeClass('hidden');
+			$(gb.playAgain).removeClass('hide');
 			return "tie";
 		}
 		
@@ -256,7 +284,7 @@ Animation = {
 
 		win: function(start, stop, winner) {
 
-			if (winner === gb.computer) {
+			if (winner === "O") {
 			
 				if (start === 0 && stop === 2) {
 					a.lineMaker.animateLineIn(12);
